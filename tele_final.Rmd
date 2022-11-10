@@ -143,6 +143,12 @@ tele_cluster5$cluster <- NULL
 logmodel = glm(yyes ~ age + jobblue.collar + jobentrepreneur + jobmanagement + jobretired + jobservices + jobstudent + jobtechnician + maritalsingle + educationuniversity.degree + educationunknown + defaultunknown + contacttelephone + monthaug + monthdec + monthjul + monthmar + monthmay + monthnov + monthoct + monthsep + day_of_weekmon + day_of_weekwed + poutcomesuccess + campaign, data = tele_norm, family = binomial)
 
 summary(logmodel)
+
+log_model_pred = predict(logmodel, newdata = tele_norm, type = "response")
+yyes_logpred <- ifelse(log_model_pred < 0.5,0,1)
+CrossTable(x = tele_norm$yyes, y = yyes_logpred, prop.chisq=FALSE)
+confusionMatrix(as.factor(yyes_logpred), as.factor(tele_norm$yyes), positive = "1")
+
 ```
 
 
