@@ -220,6 +220,15 @@ plot(tele_dtmodel, subtree = 1)
 ```
 
 ```{r}
+## Making some mistakes more costly than others
+# create a cost matrix
+error_cost <- matrix (c(0, 1, 4, 0), nrow=2)
+error_cost
 
+# apply the cost matrix to the tree
+tele_cost <- C5.0(tele_trainComb2[-6], as.factor(tele_trainComb2$test.yyes), costs = error_cost)
+tele_cost_pred <- predict(tele_cost, tele_testComb2)
+CrossTable(tele_testComb2$test.yyes, tele_cost_pred, prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE, dnn = c("actual success","predicted success"))
+confusionMatrix(as.factor(tele_cost_pred), as.factor(tele_testComb2$test.yyes))
 ```
 
