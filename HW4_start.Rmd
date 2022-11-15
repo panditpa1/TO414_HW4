@@ -89,27 +89,25 @@ CrossTable(x=tele_norm$yyes, y=log_tele_yyes, prop.chisq=FALSE)
 confusionMatrix(as.factor(log_tele_yyes), as.factor(tele_norm$yyes), positive = "1")
 ```
 
-## KNN Model Predictions
 ```{r}
-#Lets run the KNN command
-library(class)
-library(caret)
-library(gmodels)
-# Depending on R-version and computer, different rows may be selected. 
-# If that happens, results are different. 
+KNN_train <- tele_norm[-test_set,]
+KNN_test <- tele_norm[test_set,]
 
-# Create a train set and test set
-#First the predictors
-#KNN_train <- tele_norm[-test_set, ]
-#KNN_train_labels <- tele_norm[-test_set, "yyes"]
+KNN_train_labels <- tele_norm[-test_set, "yyes"]
+KNN_test_labels <- tele_norm[test_set, "yyes"]
+
+KNN_test$yyes = NULL
+KNN_train$yyes = NULL
 
 ##Test
-KNN_pred <- test[, match("yyes", names(tele_norm))]
-KNN_test_pred <- knn(train = train, test = test, cl = train_labels, k = 3)
-CrossTable(x = KNN_pred, y =KNN_test_pred, 
+KNN_pred <- KNN_test[, match("yyes", names(tele_norm))]
+KNN_test_pred <- knn(train = KNN_train, test = KNN_test, cl = train_labels, k = 3)
+CrossTable(x = KNN_pred, y =KNN_test_pred,
            prop.chisq=FALSE)
 confusionMatrix(as.factor(KNN_test_pred),as.factor(test_labels), positive = "1")
 ```
+
+
 
 #ANN Model
 ```{r}
@@ -151,10 +149,10 @@ tele_classifier
 tele2_predictions <- predict(tele_classifier, test)
 head(tele2_predictions)
 
-table(tele2_predictions, test$y)
+table(tele2_predictions, test$yyes)
 
 # look at agreement vs non-agreement
-agreement <- tele2_predictions == test$y
+agreement <- tele2_predictions == test$yyes
 table(agreement)
 prop.table(table(agreement))
 
@@ -182,7 +180,7 @@ plot(tele_dtmodel, subtree = 4)
 
 # cross tabulation of predicted versus actual classes
 library(gmodels)
-CrossTable(tele_test2$y, dt_predict,
+CrossTable(test$yyes, dt_predict,
            prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
            dnn = c('actual pick up', 'predicted pick up'))
 confusionMatrix(as.factor(dt_predict), as.factor(test$y), positive = "1")
@@ -201,8 +199,8 @@ library(kernlab)
 
 teleCombined = combined_prediction[sample(1:nrow(combined_prediction)), ]
 
-tele_trainComb2 <- teleCombined[1:12356, ]
-tele_testComb2  <- teleCombined[12356:41188, ]
+tele_trainComb2 <- teleCombined[1:14416, ]
+tele_testComb2  <- teleCombined[14416:20594, ]
 
 str(tele_trainComb2)
 ```
@@ -210,8 +208,8 @@ str(tele_trainComb2)
 ```{r}
 library(C50)
 
-prop.table(table(tele_trainComb2$y))
-prop.table(table(tele_testComb2$y))
+prop.table(table(tele_trainComb2$test.yyes))
+prop.table(table(tele_testComb2$test.yyes))
 
 tele_dtmodel <- C5.0(as.factor(test.yyes) ~ ., data = tele_trainComb2)
 dt_predict <- predict(tele_dtmodel, tele_testComb2)
