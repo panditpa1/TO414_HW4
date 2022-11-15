@@ -1,6 +1,6 @@
 ---
 title: "HW4_start"
-author: "Jessica Guo"
+author: "Satvik Suneja, Parth Pandit, Isabella Lian, Sreya Manchiraju, Jessica Guo"
 date: "11/9/2022"
 output: html_document
 ---
@@ -137,10 +137,10 @@ library(kernlab)
 
 tele2 = tele[sample(1:nrow(tele)), ]
 
-tele_train2 <- tele2[1:20594, ]
-tele_test2  <- tele2[20595:41188, ]
+#tele_train2 <- tele2[1:20594, ]
+#tele_test2  <- tele2[20595:41188, ]
 
-tele_classifier <- ksvm(as.factor(y) ~ ., data = tele_train2,
+tele_classifier <- ksvm(as.factor(yyes) ~ ., data = train,
                           kernel = "vanilladot")
 
 tele_classifier
@@ -148,13 +148,13 @@ tele_classifier
 
 ```{r}
 # predictions on testing dataset
-tele2_predictions <- predict(tele_classifier, tele_test2)
+tele2_predictions <- predict(tele_classifier, test)
 head(tele2_predictions)
 
-table(tele2_predictions, tele_test2$y)
+table(tele2_predictions, test$y)
 
 # look at agreement vs non-agreement
-agreement <- tele2_predictions == tele_test2$y
+agreement <- tele2_predictions == test$y
 table(agreement)
 prop.table(table(agreement))
 
@@ -169,12 +169,12 @@ install.packages("C50")
 ```{r}
 library(C50)
 
-prop.table(table(tele_train2$y))
-prop.table(table(tele_test2$y))
+prop.table(table(train$y))
+prop.table(table(test$y))
 
-tele_dtmodel <- C5.0(y ~ ., data = tele_train2)
-dt_predict <- predict(tele_dtmodel, tele_test2)
-plot(tele_dtmodel, subtree = 3)
+tele_dtmodel <- C5.0(as.factor(yyes) ~ ., data = train)
+dt_predict <- predict(tele_dtmodel, test)
+plot(tele_dtmodel, subtree = 4)
 
 ```
 
@@ -185,15 +185,38 @@ library(gmodels)
 CrossTable(tele_test2$y, dt_predict,
            prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
            dnn = c('actual pick up', 'predicted pick up'))
-confusionMatrix(as.factor(dt_predict), as.factor(tele_test2$y), positive = "1")
+confusionMatrix(as.factor(dt_predict), as.factor(test$y), positive = "1")
 
 ```
 
 ```{r}
-combined_prediction <- data.frame(log_tele, KNN_pred, ANN_prediction, tele2_predictions, dt_predict, test$yyes)
+combined_prediction <- data.frame(log_tele_yyes, KNN_test_pred, tele_pred, tele2_predictions, dt_predict, test$yyes)
 summary(combined_prediction)
 
 str(combined_prediction)
+```
+
+```{r}
+library(kernlab)
+
+teleCombined = combined_prediction[sample(1:nrow(combined_prediction)), ]
+
+tele_trainComb2 <- teleCombined[1:12356, ]
+tele_testComb2  <- teleCombined[12356:41188, ]
+
+str(tele_trainComb2)
+```
+
+```{r}
+library(C50)
+
+prop.table(table(tele_trainComb2$y))
+prop.table(table(tele_testComb2$y))
+
+tele_dtmodel <- C5.0(as.factor(test.yyes) ~ ., data = tele_trainComb2)
+dt_predict <- predict(tele_dtmodel, tele_testComb2)
+plot(tele_dtmodel, subtree = 1)
+
 ```
 
 ```{r}
